@@ -5,8 +5,7 @@ require('dotenv').config();
 
 // Import routes
 const userRoutes = require('./routes/user.routes');
-// const authRoutes = require('./routes/auth.routes');
-const difyAccountRoutes = require('./routes/difyAccount.routes');
+const authRoutes = require('./routes/auth.routes');
 const chatbotRoutes = require('./routes/chatbot.routes');
 const chatSessionRoutes = require('./routes/chatSession.routes');
 const messageRoutes = require('./routes/message.routes');
@@ -21,8 +20,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // Routes
 app.use('/api/users', userRoutes);
-// app.use('/api/auth', authRoutes);
-app.use('/api/dify-accounts', difyAccountRoutes);
+app.use('/api/auth', authRoutes);
 app.use('/api/chatbots', chatbotRoutes);
 app.use('/api/chat-sessions', chatSessionRoutes);
 app.use('/api/messages', messageRoutes);

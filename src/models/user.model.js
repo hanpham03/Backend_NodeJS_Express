@@ -1,10 +1,11 @@
 const db = require('../config/database');
 
-class User {
+class Users {
     constructor(user) {
         this.email = user.email;
         this.password_hash = user.password_hash;
         this.full_name = user.full_name;
+        this.created_at = user.created_at;
         this.is_active = user.is_active;
     }
     static async findAll() {
@@ -46,4 +47,4 @@ class User {
     }
 }
 
-module.exports = User;
+module.exports = Users;

@@ -11,11 +11,6 @@ const validateUser = [
     body('full_name').trim().notEmpty()
 ];
 
-// Routes
-// BỎ xác thực (nếu bạn muốn tạm test)
-// router.get('/:id', userController.getUser);
-
-// GIỮ xác thực (nếu bạn muốn bảo vệ route)
 router.get('/:id', authMiddleware.verifyToken, userController.getUser);
 router.get('/', userController.getAllUsers);
 router.post('/', validateUser, userController.createUser);
