@@ -54,60 +54,78 @@ class AuthController {
     // Login user
     async login(req, res) {
         try {
-            // Check validation results
-            const errors = validationResult(req);
-            if (!errors.isEmpty()) {
-                return res.status(400).json({ errors: errors.array() });
-            }
-
-            const { email, password } = req.body;
-
-            // Find user by email
-            const user = await User.findByEmail(email);
-            if (!user) {
-                return res.status(401).json({ 
-                    message: 'email hoặc mật khẩu không hợp lệ' 
-                });
-            }
-
-            // Check if user is active
-            if (!user.is_active) {
-                return res.status(401).json({ 
-                    message: 'Tài khoản bị khóa!' 
-                });
-            }
-
-            // Verify password
-            const isValidPassword = await bcrypt.compare(
-                password, 
-                user.password_hash
-            );
-            if (!isValidPassword) {
-                return res.status(401).json({ 
-                    message: 'email hoặc mật khẩu không hợp lệ' 
-                });
-            }
-
-            // Generate JWT token
-            const token = jwt.sign(
-                { id: user.id, email: user.email },
-                process.env.JWT_SECRET,
-                { expiresIn: '24h' }
-            );
-
-            res.json({
-                message: 'Login successful',
-                token,
-                user: {
-                    id: user.id,
-                    email: user.email,
-                    full_name: user.full_name
-                }
+          // Kiểm tra kết quả validate
+          const errors = validationResult(req);
+          if (!errors.isEmpty()) {
+            return res.status(400).json({ errors: errors.array() });
+          }
+      
+          const { email, password } = req.body;
+      
+          // Tìm user theo email
+          const user = await User.findByEmail(email);
+          if (!user) {
+            return res.status(401).json({ 
+              message: 'email hoặc mật khẩu không hợp lệ' 
             });
+          }
+      
+          // Kiểm tra trạng thái active của user
+          if (!user.is_active) {
+            return res.status(401).json({ 
+              message: 'Tài khoản bị khóa!' 
+            });
+          }
+      
+          // Xác thực mật khẩu
+          const isValidPassword = await bcrypt.compare(password, user.password_hash);
+          if (!isValidPassword) {
+            return res.status(401).json({ 
+              message: 'email hoặc mật khẩu không hợp lệ' 
+            });
+          }
+      
+          // Tạo JWT token với thời hạn 24 giờ
+          const token = jwt.sign(
+            { id: user.id, email: user.email },
+            process.env.JWT_SECRET,
+            { expiresIn: '24h' }
+          );
+      
+          // Set cookie "token" vào response, sử dụng các tùy chọn bảo mật:
+          res.cookie('token', token, {
+            httpOnly: true, // Không cho phép truy cập từ JavaScript trên client
+            secure: process.env.NODE_ENV === 'production', // Chỉ gửi cookie qua HTTPS trong production
+            maxAge: 24 * 60 * 60 * 1000, // 24 giờ (tính theo ms)
+            sameSite: 'Strict', // Ngăn chặn CSRF
+            path: '/',
+          });
+      
+          // Trả về response thành công
+          return res.json({
+            message: 'Login successful',
+            token, // Bạn có thể loại bỏ token ở đây nếu chỉ dùng cookie để xác thực
+            user: {
+              id: user.id,
+              email: user.email,
+              full_name: user.full_name
+            }
+          });
         } catch (error) {
-            console.error('Login error:', error);
-            res.status(500).json({ message: 'Error logging in' });
+          console.error('Login error:', error);
+          return res.status(500).json({ message: 'Error logging in' });
         }
+      }
+    
+      // logout current user
+    async logout(req, res) {
+    // Xóa cookie 'token'
+    res.clearCookie('token', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        path: '/',
+    });
+    return res.json({ message: 'Logout successful' });
     }
 
     // Get current user profile

@@ -30,4 +30,8 @@ router.put('/:id', authMiddleware.verifyToken, chatbotController.updateChatbot);
 // Xóa chatbot theo ID
 router.delete('/:id', authMiddleware.verifyToken, chatbotController.deleteChatbot);
 
+// **Endpoint proxy gọi API Dify**
+router.post('/chat', chatbotController.chatWithDify);
+router.post('/create-chatbot', chatbotController.createChatbot);
+
 module.exports = router;
